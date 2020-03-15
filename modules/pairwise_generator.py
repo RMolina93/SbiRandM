@@ -11,14 +11,18 @@ def write_pairwise(pdb_file, pairwise_interactions, tmp):
     output: This function writes the PairWise interactions of chains in different PDB files in the same folder as input.
     """
 
-    split_call = f'./scripts/PDBtoSplitChain2.pl -i {pdb_file} -o temp_{pdb_file[:-4]}_' 
+    split_call = f'./modules/scripts/PDBtoSplitChain2.pl -i {pdb_file} -o {tmp}/temp_{os.path.basename(pdb_file)[:-4]}_' 
     os.system(split_call)
     for chainA, chainB in pairwise_interactions:
-        os.system(f'cat temp_{pdb_file[:-4]}_{chainA}.pdb > complex_{chainA}_{chainB}.pdb')
-        os.system(f'cat temp_{pdb_file[:-4]}_{chainB}.pdb >> complex_{chainA}_{chainB}.pdb')
-    filelist = glob.glob("temp_*.*")
-    for f in filelist:
-        os.remove(f)
+       ## !!! WARNING AÑADIR EL PDBTOADDCHAIN PARA PONER CADENAS A Y B EN LA PROTEINA 
+        os.system(f'./modules/scripts/PDBtoAddChain.pl -i {tmp}/temp_{os.path.basename(pdb_file)[:-4]}_{chainA}.pdb -o {tmp}/temp_{os.path.basename(pdb_file)[:-4]}_{chainA}_mod -c "A"')
+        os.system(f'./modules/scripts/PDBtoAddChain.pl -i {tmp}/temp_{os.path.basename(pdb_file)[:-4]}_{chainB}.pdb -o {tmp}/temp_{os.path.basename(pdb_file)[:-4]}_{chainB}_mod -c "B"')
+        os.system(f'cat {tmp}/temp_{os.path.basename(pdb_file)[:-4]}_{chainA}_mod.pdb > {tmp}/complex_{chainA}_{chainB}.pdb')
+        os.system(f'echo "TER" >> {tmp}/complex_{chainA}_{chainB}.pdb')
+        os.system(f'cat {tmp}/temp_{os.path.basename(pdb_file)[:-4]}_{chainB}_mod.pdb >> {tmp}/complex_{chainA}_{chainB}.pdb')
+    filelist = glob.glob(f"{tmp}/temp_*.*")
+    #for f in filelist:
+    #    os.remove(f)
 
 
 def check_chain_interaction(chainA, chainB, threshold):
@@ -36,6 +40,7 @@ def check_chain_interaction(chainA, chainB, threshold):
                     for atom_B in residue_B:
                         if atom_A.id == "CB" and atom_B.id == "CB":
                             if atom_A - atom_B < threshold: 
+                                print ("Chains interact")
                                 return True
                             else: continue
         return False
@@ -58,7 +63,7 @@ def pairwise_generator(pdb_file, tmp):
             #print ("PDB has the next number of chains:", len(model))
             for chain in model:
                 for second_chain in model:
-                    if check_chain_interaction(chain, second_chain, 10): interacting_chains.append((chain.id, second_chain.id))
+                    if check_chain_interaction(chain, second_chain, 20): interacting_chains.append((chain.id, second_chain.id))
             
             unique_pairwise_interactions = ([v for k, v in enumerate(interacting_chains) if v[::-1] not in interacting_chains[:k]])
             write_pairwise(pdb_file, unique_pairwise_interactions, tmp)
