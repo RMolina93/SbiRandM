@@ -21,8 +21,8 @@ def write_pairwise(pdb_file, pairwise_interactions, tmp):
         os.system(f'echo "TER" >> {tmp}/complex_{chainA}_{chainB}.pdb')
         os.system(f'cat {tmp}/temp_{os.path.basename(pdb_file)[:-4]}_{chainB}_mod.pdb >> {tmp}/complex_{chainA}_{chainB}.pdb')
     filelist = glob.glob(f"{tmp}/temp_*.*")
-    #for f in filelist:
-    #    os.remove(f)
+    for f in filelist:
+        os.remove(f)
 
 
 def check_chain_interaction(chainA, chainB, threshold):
