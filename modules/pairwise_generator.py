@@ -38,7 +38,7 @@ def check_chain_interaction(chainA, chainB, threshold):
             for residue_B in chainB:
                 for atom_A in residue_A:
                     for atom_B in residue_B:
-                        if atom_A.id == "CB" and atom_B.id == "CB":
+                        #if atom_A.id == "CB" and atom_B.id == "CB":
                             if atom_A - atom_B < threshold: 
                                 print ("Chains interact")
                                 return True
@@ -52,7 +52,7 @@ def pairwise_generator(pdb_file, tmp):
     Then it calls the function check_chain_interactions, and returns a list of tupples containing the ID of the chains that interact.
     """
 
-    io = PDBIO()
+    #io = PDBIO()
     parser = PDBParser(PERMISSIVE=1)
     interacting_chains = list()
     structure = parser.get_structure('Complex', pdb_file)
@@ -64,7 +64,7 @@ def pairwise_generator(pdb_file, tmp):
             for chain in model:
                 for second_chain in model:
                     if check_chain_interaction(chain, second_chain, 20): interacting_chains.append((chain.id, second_chain.id))
-            
+
             unique_pairwise_interactions = ([v for k, v in enumerate(interacting_chains) if v[::-1] not in interacting_chains[:k]])
             write_pairwise(pdb_file, unique_pairwise_interactions, tmp)
                         
