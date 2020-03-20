@@ -1,7 +1,6 @@
 
-# Homology modeling with multiple templates
-from modeller import *              # Load standard Modeller classes
-from modeller.automodel import *    # Load the automodel class
+from modeller import *              
+from modeller.automodel import *    
 import argparse
 import glob, os, argparse, warnings
 from Bio.PDB import *
@@ -14,6 +13,14 @@ import difflib
 warnings.filterwarnings("ignore")
 
 def parse_arguments():
+
+    """
+    Parsing of arguments. 
+    -d : Folder with PDB's Pairwise Interactions
+    -fasta: File with the fasta you want to model
+    -output: Folder to put the output
+    """
+
     parser = argparse.ArgumentParser(description='Complexes modelling application.')
 
     parser.add_argument('-d', action="store", required =True, dest="folder", help="Folder with all the PDBs of the interactions complex")
@@ -23,8 +30,15 @@ def parse_arguments():
     args = vars(parser.parse_args())
     return args
 
-
 def fasta_to_object(fasta):
+
+    """
+    This function takes a fasta file with several chains, and parse it into a
+    query object. Also changes the DNA chains to Placeholder characters.
+
+    @input folder - File with Fasta
+    @output - Query object.
+    """
 
     record_dict = SeqIO.to_dict(SeqIO.parse(fasta, "fasta"))
     query = Query(name=os.path.basename(fasta))
@@ -36,16 +50,6 @@ def fasta_to_object(fasta):
 
         print (chain.name, chain.sequence)
     return query
-
-
-
-
-
-
-
-
-
-
 
 def create_models(folder):
 
@@ -75,30 +79,24 @@ def create_models(folder):
     
     return list_of_interactions
 
-def test(query, interactions_list):
+def check_similarity(query, interactions_list):
+
+    """
+    This function takes a query object and a list of Pairwise interaction objects, and
+    returns the pairs of chains that have a similarity ratio on sequence over 73%
+    """
     for chain in query.chains:
         for protein in interactions_list:
             for protein_chain in protein.chains:
                 #print (chain.sequence.strip(), "/////", str(protein_chain.sequence)) 
                 if difflib.SequenceMatcher(None,chain.sequence.strip(), str(protein_chain.sequence)).ratio() >0.73 :
                     print ("These two chains match", chain.name, protein.name, protein_chain.name)
-                    #print (chain.sequence.strip(), "/////", protein.name, str(protein_chain.sequence))
-
 
 if __name__ == "__main__":
 
     args = parse_arguments()
     query = fasta_to_object(args['fasta_seq'])
     interactions = create_models(args['folder'])
-
-
-    print (query)
-    #fasta_dict = fasta_to_dict(args['fasta_seq'], args['folder'])
-
-
-    #for element in interactions:
-    #    print (element.name)
-    test(query, interactions)
-    print ("guau")
+    check_similarity(query, interactions)
 
 
