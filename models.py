@@ -2,11 +2,11 @@ import os, sys
 
 class Chain():
 
-    def __init__(self, name, sequence, whichChain=list()):
+    def __init__(self, name, sequence, originalChain=list()):
         self.name = name
         self.sequence = str(sequence)
         self.used = False
-        self.whichChain=list()
+        self.originalChain=list()
     
     def used(self):
         self.used = True

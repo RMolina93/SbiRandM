@@ -47,8 +47,7 @@ def fasta_to_object(fasta):
         #print (sequence, ":",record_dict[sequence].seq)
         chain.dna_to_placeholder()
         query.add_chain(chain)
-
-        print (chain.name, chain.sequence)
+        #print (chain.name, chain.sequence)
     return query
 
 def create_models(folder):
@@ -90,7 +89,36 @@ def check_similarity(query, interactions_list):
             for protein_chain in protein.chains:
                 #print (chain.sequence.strip(), "/////", str(protein_chain.sequence)) 
                 if difflib.SequenceMatcher(None,chain.sequence.strip(), str(protein_chain.sequence)).ratio() >0.73 :
-                    print ("These two chains match", chain.name, protein.name, protein_chain.name)
+                    protein_chain.originalChain = chain.name
+                    #print ("These two chains match", chain.name, protein.name, protein_chain.name)
+
+def generate_alignment(query, interactions):
+    query_info = list()
+    #QUERY
+    print (query.name)
+    for query_chain in query.chains:
+        print (query_chain.name) 
+        #query_info.append(query_chain.name, query_chain.sequence)
+        print (query_chain.sequence) 
+
+    #print (query_info)
+    
+    for interaction in interactions:
+        print ("CHECKING NEW PDB")
+        for chain in query.chains:
+            
+            if interaction.chains[0].originalChain == chain.name:
+                print (interaction.chains[0].sequence)
+            elif interaction.chains[1].originalChain == chain.name:
+                print (interaction.chains[1].sequence)
+            else:
+                print ("-" * len(chain.sequence))
+        print ("\n")
+        
+
+
+
+
 
 if __name__ == "__main__":
 
@@ -98,5 +126,6 @@ if __name__ == "__main__":
     query = fasta_to_object(args['fasta_seq'])
     interactions = create_models(args['folder'])
     check_similarity(query, interactions)
+    generate_alignment(query, interactions)
 
 
