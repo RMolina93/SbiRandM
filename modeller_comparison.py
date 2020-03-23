@@ -5,8 +5,10 @@ import argparse
 import glob, os, argparse, warnings
 from Bio.PDB import *
 from Bio.PDB.PDBParser import PDBParser
-from data import aminoacids
 from Bio import SeqIO
+from Bio import pairwise2
+
+from data import aminoacids
 from models import Protein_Interaction, Chain, Query
 import difflib
 
@@ -41,13 +43,14 @@ def fasta_to_object(fasta):
     """
 
     record_dict = SeqIO.to_dict(SeqIO.parse(fasta, "fasta"))
-    query = Query(name=os.path.basename(fasta))
+    query = Query(name=(os.path.splitext(os.path.basename(fasta))[0]))
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    index = 0
     for sequence in record_dict.keys():
-        chain = Chain(name = sequence, sequence = record_dict[sequence].seq)
-        #print (sequence, ":",record_dict[sequence].seq)
+        chain = Chain(name = alphabet[index], sequence = record_dict[sequence].seq, first_residue = 1, last_residue = len(record_dict[sequence].seq))
         chain.dna_to_placeholder()
         query.add_chain(chain)
-        #print (chain.name, chain.sequence)
+        index += 1
     return query
 
 def create_models(folder):
@@ -70,9 +73,10 @@ def create_models(folder):
 
         for pdb_chain in structure[0]:
             sequence = ""
+            
             for residue in pdb_chain:
                 sequence += aminoacids[residue.get_resname().strip()]
-            protein.add_chain(Chain(pdb_chain.get_id(), sequence))
+            protein.add_chain(Chain(name = pdb_chain.get_id(), sequence = sequence, first_residue = list(pdb_chain)[0].get_id()[1], last_residue = list(pdb_chain)[-1].get_id()[1]))
 
         list_of_interactions.append(protein)
     
@@ -92,28 +96,63 @@ def check_similarity(query, interactions_list):
                     protein_chain.originalChain = chain.name
                     #print ("These two chains match", chain.name, protein.name, protein_chain.name)
 
-def generate_alignment(query, interactions):
-    query_info = list()
-    #QUERY
-    print (query.name)
-    for query_chain in query.chains:
-        print (query_chain.name) 
-        #query_info.append(query_chain.name, query_chain.sequence)
-        print (query_chain.sequence) 
+def generate_alignment(query, interactions, output_folder):
 
-    #print (query_info)
-    
-    for interaction in interactions:
-        print ("CHECKING NEW PDB")
-        for chain in query.chains:
-            
-            if interaction.chains[0].originalChain == chain.name:
-                print (interaction.chains[0].sequence)
-            elif interaction.chains[1].originalChain == chain.name:
-                print (interaction.chains[1].sequence)
+    with open(os.path.join(output_folder, "alignment.pir"), "w") as output:
+
+        query_info = list()
+        #QUERY
+        output.write("P1;" + query.name + "\n")
+        output.write("sequence :" + query.name + ": 1:" + query.chains[0].name + " :" + str(len(query.chains[0].sequence)) + ":" + query.chains[-1].name + " : : :-1.0:-1.0\n")
+        
+        for query_chain in query.chains:
+
+            if any((c in "UOZX") for c in query_chain.sequence):
+                if query_chain.name == query.chains[-1].name:  
+                    output.write("." * len(query_chain.sequence) + "*\n")
+                else:                    
+                    output.write("." * len(query_chain.sequence) + "\n/\n")
             else:
-                print ("-" * len(chain.sequence))
-        print ("\n")
+                if query_chain.name == query.chains[-1].name:  
+                    output.write(query_chain.sequence.strip() + "*\n") 
+                else:                    
+                    output.write(query_chain.sequence.strip() + "\n/\n") 
+
+        
+        for interaction in interactions:
+            output.write(">P1;" + interaction.name + "\n")
+            output.write("structureX:" + interaction.name + ":" + interaction.chains[0].first_aminoacid + ": A :" + interaction.chains[0].last_aminoacid + ":B : : :-1.0:-1.0\n")
+            for chain in query.chains:
+                if interaction.chains[0].originalChain == chain.name: # CHAIN A OF INTERACTION
+                    
+                    if any((c in "UOZX") for c in interaction.chains[0].sequence):
+
+                        if chain.name == query.chains[-1].name:  
+                            output.write("." * len(chain.sequence) + "*\n")
+                        else:                    
+                            output.write("." * len(chain.sequence) + "\n/\n")
+                    else : 
+                        alignments = pairwise2.align.globalms(chain.sequence, interaction.chains[0].sequence,  2, -1, -30, -10)
+                        output.write(alignments[0][1] + "\n/\n")
+
+                elif interaction.chains[1].originalChain == chain.name: # CHAIN B OF INTERACTION
+                    if any((c in "UOZX") for c in interaction.chains[1].sequence):
+                        if chain.name == query.chains[-1].name: 
+                            output.write("-" * len(chain.sequence) + "*\n")
+                        else:
+                            output.write("-" * len(chain.sequence) + "\n/\n")
+
+                    else: 
+                        alignments = pairwise2.align.globalms(chain.sequence, interaction.chains[1].sequence,  2, -1, -30, -10)
+                        if chain.name == query.chains[-1].name:  
+                            output.write(alignments[0][1] + "*\n")
+                        else:                    
+                            output.write(alignments[0][1] + "\n/\n")
+                else:
+                    if chain.name == query.chains[-1].name: 
+                        output.write("-" * len(chain.sequence) + "*\n")
+                    else:
+                        output.write("-" * len(chain.sequence) + "\n/\n")
         
 
 
@@ -126,6 +165,6 @@ if __name__ == "__main__":
     query = fasta_to_object(args['fasta_seq'])
     interactions = create_models(args['folder'])
     check_similarity(query, interactions)
-    generate_alignment(query, interactions)
+    generate_alignment(query, interactions, args['output_folder'])
 
 
