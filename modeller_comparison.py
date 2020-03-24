@@ -80,7 +80,7 @@ def create_models(folder):
             protein.add_chain(Chain(name = pdb_chain.get_id(), sequence = sequence, first_residue = list(pdb_chain)[0].get_id()[1], last_residue = list(pdb_chain)[-1].get_id()[1]))
 
         list_of_interactions.append(protein)
-    
+    print (list_of_interactions)
     return list_of_interactions
 
 def check_similarity(query, interactions_list):
@@ -109,6 +109,7 @@ def generate_alignment(query, interactions, output_folder):
         output.write("sequence:" + query.name + ": 1:" + query.chains[0].name + " :" + str(len(query.chains[0].sequence)) + ":" + query.chains[-1].name + ": : :-1.0:-1.0\n")
         
         for query_chain in query.chains:
+            print ("HOLAAA SOY LA QUERY CHAIN", query_chain.name)
 
             if any((c in "UOZX") for c in query_chain.sequence):
                 if query_chain.name == query.chains[-1].name:  
@@ -190,5 +191,5 @@ if __name__ == "__main__":
     interactions = create_models(args['folder'])
     check_similarity(query, interactions)
     generate_alignment(query, interactions, args['output_folder'])
-    make_model(args['output_folder'], args['folder'], args['fasta_seq'])
+    #make_model(args['output_folder'], args['folder'], args['fasta_seq'])
 
