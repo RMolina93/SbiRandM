@@ -7,6 +7,7 @@ from Bio.PDB import *
 from Bio.PDB.PDBParser import PDBParser
 from Bio import SeqIO
 from Bio import pairwise2
+import shutil
 
 from data import aminoacids
 from models import Protein_Interaction, Chain, Query
@@ -98,37 +99,39 @@ def check_similarity(query, interactions_list):
 
 def generate_alignment(query, interactions, output_folder):
 
+    if not os.path.isdir(output_folder): os.mkdir(output_folder)
+
     with open(os.path.join(output_folder, "alignment.pir"), "w") as output:
 
         query_info = list()
         #QUERY
-        output.write("P1;" + query.name + "\n")
-        output.write("sequence :" + query.name + ": 1:" + query.chains[0].name + " :" + str(len(query.chains[0].sequence)) + ":" + query.chains[-1].name + " : : :-1.0:-1.0\n")
+        output.write(">P1;" + query.name.strip() + "\n")
+        output.write("sequence:" + query.name + ": 1:" + query.chains[0].name + " :" + str(len(query.chains[0].sequence)) + ":" + query.chains[-1].name + ": : :-1.0:-1.0\n")
         
         for query_chain in query.chains:
 
             if any((c in "UOZX") for c in query_chain.sequence):
                 if query_chain.name == query.chains[-1].name:  
-                    output.write("." * len(query_chain.sequence) + "*\n")
+                    output.write("." * len(query_chain.sequence) + "*\n\n")
                 else:                    
                     output.write("." * len(query_chain.sequence) + "\n/\n")
             else:
                 if query_chain.name == query.chains[-1].name:  
-                    output.write(query_chain.sequence.strip() + "*\n") 
+                    output.write(query_chain.sequence.strip() + "*\n\n") 
                 else:                    
                     output.write(query_chain.sequence.strip() + "\n/\n") 
 
         
         for interaction in interactions:
             output.write(">P1;" + interaction.name + "\n")
-            output.write("structureX:" + interaction.name + ":" + interaction.chains[0].first_aminoacid + ": A :" + interaction.chains[0].last_aminoacid + ":B : : :-1.0:-1.0\n")
+            output.write("structureX:" + interaction.name + ":" + interaction.chains[0].first_aminoacid + ":A:" + interaction.chains[1].last_aminoacid + ":B: : :-1.0:-1.0\n")
             for chain in query.chains:
                 if interaction.chains[0].originalChain == chain.name: # CHAIN A OF INTERACTION
                     
                     if any((c in "UOZX") for c in interaction.chains[0].sequence):
 
                         if chain.name == query.chains[-1].name:  
-                            output.write("." * len(chain.sequence) + "*\n")
+                            output.write("." * len(chain.sequence) + "*\n\n")
                         else:                    
                             output.write("." * len(chain.sequence) + "\n/\n")
                     else : 
@@ -138,25 +141,46 @@ def generate_alignment(query, interactions, output_folder):
                 elif interaction.chains[1].originalChain == chain.name: # CHAIN B OF INTERACTION
                     if any((c in "UOZX") for c in interaction.chains[1].sequence):
                         if chain.name == query.chains[-1].name: 
-                            output.write("-" * len(chain.sequence) + "*\n")
+                            output.write("." * len(chain.sequence) + "*\n\n")
                         else:
-                            output.write("-" * len(chain.sequence) + "\n/\n")
+                            output.write("." * len(chain.sequence) + "\n/\n")
 
                     else: 
                         alignments = pairwise2.align.globalms(chain.sequence, interaction.chains[1].sequence,  2, -1, -30, -10)
                         if chain.name == query.chains[-1].name:  
-                            output.write(alignments[0][1] + "*\n")
+                            output.write(alignments[0][1] + "*\n\n")
                         else:                    
                             output.write(alignments[0][1] + "\n/\n")
                 else:
                     if chain.name == query.chains[-1].name: 
-                        output.write("-" * len(chain.sequence) + "*\n")
+                        output.write("-" * len(chain.sequence) + "*\n\n")
                     else:
                         output.write("-" * len(chain.sequence) + "\n/\n")
         
+def make_model(output_folder, interaction_pdb_folder, fasta):
+    #detect pir file
+    templates = list()
+    for interaction_file in os.listdir(interaction_pdb_folder):
+        templates.append(interaction_file)
+        shutil.copyfile( os.path.join(interaction_pdb_folder, interaction_file) , os.path.join(output_folder, interaction_file) )
 
+    os.chdir(output_folder)
+    log.verbose()    # request verbose output
+    env = environ()  # create a new MODELLER environment to build this model in
 
+    # directories for input atom files
+    env.io.atom_files_directory = ['.', '../atom_files']
+    pir_file = glob.glob("*.pir")[0]
 
+    a = automodel(env,
+                alnfile  = pir_file, # alignment filename
+                knowns   = tuple(templates),     # codes of the templates
+                sequence = str(os.path.splitext(os.path.basename(fasta))[0].strip()))       
+
+    a.starting_model= 1                 # index of the first model
+    a.ending_model  = 2                 # index of the last model
+
+    a.make()                            # do the actual homology modeling
 
 
 if __name__ == "__main__":
@@ -166,5 +190,5 @@ if __name__ == "__main__":
     interactions = create_models(args['folder'])
     check_similarity(query, interactions)
     generate_alignment(query, interactions, args['output_folder'])
-
+    make_model(args['output_folder'], args['folder'], args['fasta_seq'])
 
