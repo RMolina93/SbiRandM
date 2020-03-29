@@ -2,13 +2,12 @@ import os, sys
 
 class Chain():
 
-    def __init__(self, name, sequence, first_residue, last_residue, originalChain=list()):
+    def __init__(self, name, sequence, first_aminoacid, last_aminoacid):
         self.name = name
         self.sequence = str(sequence)
-        self.used = False
-        self.originalChain=list()
-        self.first_aminoacid = str(first_residue)
-        self.last_aminoacid = str(last_residue)
+        self.originalChain = list()
+        self.first_aminoacid = str(first_aminoacid)
+        self.last_aminoacid = str(last_aminoacid)
 
     def used(self):
         self.used = True
@@ -27,19 +26,37 @@ class Chain():
         else:
             return False
 
+    def pretty_print(self):
+        print ("Chain name:", self.name)
+        print ("Chain sequence:", self.sequence)
+        print ("Chain Original Chain:" , self.originalChain)
+        print ("First Aminoacid Number:", self.first_aminoacid)
+        print ("Last Aminoacid Number:", self.last_aminoacid)
+
 class Protein_Interaction():
 
     def __init__(self, name, path):
         self.name = name
         self.chains =list()
         self.path = path
-        self.used = False
+        self.reversed = False
+        self.first_chain = "A"
+        self.last_chain = "B"
 
     def add_chain(self,chain):
         self.chains.append(chain)
 
-    def used(self):
-        self.used = True
+    def reverse(self):
+        self.first_chain = "B"
+        self.last_chain = "A"
+
+    def pretty_print(self):
+        print ("Interaction name:", self.name)
+        print ("Chains:", self.chains)
+        print ("Path:" , self.path)
+        print ("Biopython object:", self.biopython_object)
+        print ("Reversed:", self.reversed)
+
 
 class Query():
 
