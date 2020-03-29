@@ -50,6 +50,7 @@ def fasta_to_object(fasta):
     alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     index = 0
     for sequence in record_dict.keys():
+        print (record_dict[sequence], len(record_dict[sequence]))
         chain = Chain(name = alphabet[index], sequence = record_dict[sequence].seq, first_aminoacid = 1, last_aminoacid = len(record_dict[sequence].seq))
         chain.dna_to_placeholder()
         query.add_chain(chain)
@@ -73,7 +74,7 @@ def create_models(folder):
     for pdb_file in glob.glob(os.path.join(folder,"*.pdb")):
         pdb_name = os.path.basename(pdb_file)
         structure = parser.get_structure('Complex', pdb_file)
-        protein = Protein_Interaction(name = pdb_name, path = pdb_file, biopython_object = structure)
+        protein = Protein_Interaction(name = pdb_name, path = pdb_file)
 
 
         for pdb_chain in structure[0]:
@@ -117,70 +118,66 @@ def generate_alignment(query, interactions, output_folder):
 
     with open(os.path.join(output_folder, "alignment.pir"), "w") as output:
 
-        query_info = list()
-        #QUERY
-        output.write(">P1;" + query.name.strip() + "\n")
-        output.write("sequence:" + query.name + ": 1:" + query.chains[0].name + " :" + str(len(query.chains[0].sequence)) + ":" + query.chains[-1].name + ": : :-1.0:-1.0\n")
-        
-        for query_chain in query.chains:
-            print ("HOLAAA SOY LA QUERY CHAIN", query_chain.name)
-
-            if any((c in "UOZX") for c in query_chain.sequence):
-                if query_chain.name == query.chains[-1].name:  
-                    output.write("." * len(query_chain.sequence) + "*\n\n")
-                else:                    
-                    output.write("." * len(query_chain.sequence) + "\n/\n")
-            else:
-                if query_chain.name == query.chains[-1].name:  
-                    output.write(query_chain.sequence.strip() + "*\n\n") 
-                else:                    
-                    output.write(query_chain.sequence.strip() + "\n/\n") 
-
-        #############
-
+        # FIRST THE INTERACTIONS
         for interaction in interactions:
             output.write(">P1;" + interaction.name + "\n")
-            output.write("structureX:" + interaction.name + ":" + interaction.chains[0].first_aminoacid + ":A:" + interaction.chains[1].last_aminoacid + ":B: : :-1.0:-1.0\n")
+            output.write("structureX:" + 
+                        interaction.name + ":" + 
+                        interaction.chains[0].first_aminoacid + ":" + 
+                        interaction.first_chain + ":" + 
+                        interaction.chains[1].last_aminoacid + 
+                        ":" + interaction.last_chain + ": : :-1.0:-1.0\n")
             
             for chain in query.chains:
-
-
+                
                 if str(interaction.chains[0].originalChain[0]) == str(chain.name): # CHAIN A OF INTERACTION
-                    if any((c in "UOZX") for c in interaction.chains[0].sequence):
 
-                        if chain.name == query.chains[-1].name:  
-                            output.write("." * len(chain.sequence) + "*\n\n")
-                        else:                    
-                            output.write("." * len(chain.sequence) + "\n/\n")
-                    else : 
-                        alignments = pairwise2.align.globalms(chain.sequence, interaction.chains[0].sequence,  2, -1, -30, -10)
-                        output.write(alignments[0][1] + "\n/\n")
+                    alignments = pairwise2.align.globalms(chain.sequence, interaction.chains[0].sequence,  2, -1, -30, -10)
+                    sequence = alignments[0][1]
+                    for letter in "ZXUOJ":
+                        sequence = sequence.replace(letter,".")
+                    output.write(sequence + "\n/\n")
 
                 elif str(interaction.chains[1].originalChain[0]) == str(chain.name): # CHAIN B OF INTERACTION
-                    if any((c in "UOZX") for c in interaction.chains[1].sequence):
-                        if chain.name == query.chains[-1].name: 
-                            output.write("." * len(chain.sequence) + "*\n\n")
-                        else:
-                            output.write("." * len(chain.sequence) + "\n/\n")
 
-                    else: 
-                        alignments = pairwise2.align.globalms(chain.sequence, interaction.chains[1].sequence,  2, -1, -30, -10)
-                        if chain.name == query.chains[-1].name:  
-                            output.write(alignments[0][1] + "*\n\n")
-                        else:                    
-                            output.write(alignments[0][1] + "\n/\n")
+                    alignments = pairwise2.align.globalms(chain.sequence, interaction.chains[1].sequence,  2, -1, -30, -10)
+                    sequence = alignments[0][1]
+                    for letter in "ZXUOJ":
+                        sequence = sequence.replace(letter,".")
+                    if chain.name == query.chains[-1].name:  
+                        output.write(sequence + "*\n\n")
+                    else:                    
+                        output.write(sequence + "\n/\n")
                 
                 else:
                     if chain.name == query.chains[-1].name: 
                         output.write("-" * len(chain.sequence) + "*\n\n")
                     else:
                         output.write("-" * len(chain.sequence) + "\n/\n")
+
+
+        #QUERY
+        output.write(">P1;" + query.name.strip() + "\n")
+        output.write("sequence:" + query.name + 
+                     ": 1:" + query.chains[0].name + 
+                     " :" + str(len(query.chains[0].sequence)) + 
+                     ":" + query.chains[-1].name + 
+                     ": : :-1.0:-1.0\n")
+        
+        for query_chain in query.chains:
+            for letter in "ZXUOJ":
+                query_chain.sequence = query_chain.sequence.replace(letter,".")
+
+            if query_chain.name == query.chains[-1].name:  
+                output.write(query_chain.sequence.strip() + "*\n\n") 
+            else:                    
+                output.write(query_chain.sequence.strip() + "\n/\n") 
             
 def make_model(output_folder, interaction_pdb_folder, fasta):
     #detect pir file
     templates = list()
     for interaction_file in os.listdir(interaction_pdb_folder):
-        if os.path.basename(interaction_file).startswith("SEPARED"):
+        if "SEPARED" in os.path.basename(interaction_file):
             templates.append(interaction_file)
             shutil.copyfile( os.path.join(interaction_pdb_folder, interaction_file) , os.path.join(output_folder, interaction_file) )
 
@@ -210,11 +207,8 @@ def separe_interactions(interactions):
     updated_interactions = list()
 
     for interaction in interactions:
-        print (interaction.name)
-        print (interaction.chains[0].originalChain, interaction.chains[1].originalChain )
         for original_chain_A in interaction.chains[0].originalChain:
             for original_chain_B in interaction.chains[1].originalChain:
-                print (type(original_chain_A))
                 if original_chain_A == original_chain_B:
                     continue
 
@@ -253,6 +247,56 @@ def separe_interactions(interactions):
 
     return updated_interactions
 
+def reorder_pdb(interactions):
+    """
+    This function takes a list of object interactions with the attribute Reversed, 
+    and reorder the PDB files that has that attribute in True
+    """
+
+    for element in interactions:
+        if element.reversed == True:
+            element.reverse()
+            element.chains = list(reversed(element.chains))
+
+            corrected_PDB = os.path.join(os.path.dirname(element.path), "CORRECTED_" + element.name)
+
+            with open(corrected_PDB, "w") as pdb_output:
+                with open(element.path, "r") as pdb_input:
+                    chain_A = list()
+
+                    for line in pdb_input.readlines():
+                        if "ATOM" in line and line[21] == "A":
+                            chain_A.append(line)
+                        elif "ATOM" in line and line[21] == "B":
+                            pdb_output.write(line)
+                    
+                    pdb_output.write("TER\n")
+                    
+                    for line in chain_A:
+                        pdb_output.write(line)
+
+            os.remove(element.path)
+            element.path = corrected_PDB
+            element.name = os.path.basename(corrected_PDB)
+            element.last_aminoacid = chain_A[-1].split(" ")[5]
+
+            print ("Reversed PDB at path:", corrected_PDB)
+
+def clean_directories(output_folder, TMP_folder):
+
+    to_remove = glob.glob(os.path.join(args['folder'], "*SEPARED*"))
+    to_remove = to_remove + glob.glob(os.path.join(args['output_folder'], "*SEPARED*")) + \
+                            glob.glob(os.path.join(output_folder, "*.V999*")) + \
+                            glob.glob(os.path.join(output_folder, "*.ini*")) + \
+                            glob.glob(os.path.join(output_folder, "*.rsr*")) + \
+                            glob.glob(os.path.join(output_folder, "*.D000*")) + \
+                            glob.glob(os.path.join(output_folder, "*.sch*")) + \
+                            glob.glob(os.path.join(output_folder, "*.pir*"))
+
+    for file in to_remove:
+        os.remove(file)
+
+
 if __name__ == "__main__":
 
     args = parse_arguments()
@@ -260,19 +304,18 @@ if __name__ == "__main__":
     interactions = create_models(args['folder'])
     check_similarity(query, interactions)
     updated_interactions = separe_interactions(interactions)
+    reorder_pdb(updated_interactions)
     
     generate_alignment(query, updated_interactions, args['output_folder'])
-    """
+    
     make_model(args['output_folder'], args['folder'], args['fasta_seq'])
+    clean_directories(args['output_folder'], args['folder'])
+    
 
-    to_remove = glob.glob(os.path.join(args['folder'], "SEPARED*"))
-    to_remove + glob.glob(os.path.join(args['output'], "SEPARED*"))
 
-    for file in to_remove:
-        os.remove(file)
-    """
-    for interaction in updated_interactions:
-        interaction.pretty_print()
+    
+    #for interaction in updated_interactions:
+    #    interaction.pretty_print()
     
 
 
