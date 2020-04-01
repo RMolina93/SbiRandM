@@ -1,10 +1,5 @@
 from Bio.SVDSuperimposer import SVDSuperimposer
-from Bio.PDB import PDBParser
-from Bio.PDB import Polypeptide
-import numpy as np
-import subprocess
-import modeller_comparison as mc
-
+from sbiRandM.sbiRandM import modeller_comparison as mc
 
 pdbExtension = ".pdb"
 proteinName = "1gzx"

@@ -1,17 +1,15 @@
 import sys
 sys.path.insert(0,"/usr/local/Cellar/modeller/9.23/modlib")
 from modeller import *              
-from modeller.automodel import *    
-import argparse
+from modeller.automodel import *
 import glob, os, argparse, warnings
-from Bio.PDB import *
 from Bio.PDB.PDBParser import PDBParser
 from Bio import SeqIO
 from Bio import pairwise2
 import shutil
 
-from data import aminoacids
-from models import Protein_Interaction, Chain, Query
+from sbiRandM.sbiRandM.data import aminoacids
+from sbiRandM.sbiRandM.models import Protein_Interaction, Chain, Query
 import difflib
 
 warnings.filterwarnings("ignore")
@@ -297,9 +295,10 @@ def clean_directories(output_folder, TMP_folder):
         os.remove(file)
 
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
 
-    args = parse_arguments()
+#    args = parse_arguments()
+def mainMod(args):
     query = fasta_to_object(args['fasta_seq'])
     interactions = create_models(args['folder'])
     check_similarity(query, interactions)
