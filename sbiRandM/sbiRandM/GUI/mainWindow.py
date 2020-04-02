@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-from sbiRandM.sbiRandM.main import *
+from sbiRandM.sbiRandM.superimp import *
 from sbiRandM.sbiRandM.modeller_comparison import *
 
 window = Tk()

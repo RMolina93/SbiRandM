@@ -72,9 +72,6 @@ def obtain_pairwise_dict(steichiometry_dict, TMP_folder):
         index += 1
         structure = parser.get_structure('Complex', pdb_file)
 
-        structure_chain_1 = Get_fasta(list(structure.get_chains())[0])
-        structure_chain_2 = Get_fasta(list(structure.get_chains())[1])
-
         #print ("Parsing PDB file", pdb_file)
 
         for steichiometry_chain in steichiometry_dict: #A,C
