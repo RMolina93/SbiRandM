@@ -41,8 +41,7 @@ def check_chain_addition(complex_pdb, chain, pairwise_dict, steichiometry_dict):
     for chain_pdb in complex_pdb.get_chains():
         fasta = Get_fasta(chain_pdb)
         for chain_2 in chains_to_test_in_complex:
-            if difflib.SequenceMatcher(None, fasta, steichiometry_dict[chain_2]["sequence"]).ratio() > 0.70:
-                #print ("Chain can be added with file:", pairwise_dict[chain][chain_2])
+            if check_homology(fasta, steichiometry_dict[chain_2]["sequence"]):
                 common_chains.append(pairwise_dict[chain][chain_2])
     
     return common_chains

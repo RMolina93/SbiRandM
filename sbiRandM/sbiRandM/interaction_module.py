@@ -5,6 +5,18 @@ from sbiRandM.sbiRandM import *
 from sbiRandM.sbiRandM.data import aminoacids
 from collections import defaultdict
 
+def check_homology(fasta_1, fasta_2):
+
+    if fasta_1 in fasta_2:
+        return True
+    elif fasta_2 in fasta_1:
+        return True
+    else:
+        if difflib.SequenceMatcher(None, fasta_1, fasta_2).ratio() > 0.60:
+            return True
+        else:
+            return False
+
 def Get_fasta(chain):
     """
     @ Input - Biopython PDB Chain object
@@ -60,18 +72,20 @@ def obtain_pairwise_dict(steichiometry_dict, TMP_folder):
         index += 1
         structure = parser.get_structure('Complex', pdb_file)
 
+        structure_chain_1 = Get_fasta(list(structure.get_chains())[0])
+        structure_chain_2 = Get_fasta(list(structure.get_chains())[1])
+
         #print ("Parsing PDB file", pdb_file)
 
         for steichiometry_chain in steichiometry_dict: #A,C
             for chain in structure.get_chains():
-                if difflib.SequenceMatcher(None, Get_fasta(chain), steichiometry_dict[steichiometry_chain]["sequence"]).ratio() > 0.70:
+
+                if check_homology(Get_fasta(chain), steichiometry_dict[steichiometry_chain]["sequence"] ):
                     chain.real_id = steichiometry_chain
-                    print("hola")
-                print(steichiometry_chain)
 
 
         chain_list = list(structure.get_chains())
-
+        print ("File is", pdb_file)
         pairwise_dict[chain_list[0].real_id][chain_list[1].real_id] = (pdb_file)
         pairwise_dict[chain_list[1].real_id][chain_list[0].real_id] = (pdb_file)
 
