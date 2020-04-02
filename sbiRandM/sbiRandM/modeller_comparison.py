@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0,"/usr/local/Cellar/modeller/9.23/modlib")
-from modeller import *              
-from modeller.automodel import *
+#from modeller import *
+#from modeller.automodel import *
 import glob, os, argparse, warnings
 from Bio.PDB.PDBParser import PDBParser
 from Bio import SeqIO
