@@ -17,8 +17,13 @@ def parse_arguments():
     parser.add_argument('-d', action="store", required =True, dest="folder", help="Folder with all the PDBs of the interactions complex")
     parser.add_argument('-fasta', action="store", required=True, dest="fasta_seq", help="Fasta sequence of the full complex.")
     parser.add_argument('-output', action="store", required=True, dest="output_folder", help="Output dir to store the results")
+    parser.add_argument('-v', '--verbose', dest = 'verbose', action = 'store_true', default = False, help = 'Print log to stderr')
 
     args = vars(parser.parse_args())
+
+    if args.verbose:
+        print ("Verbose mode: activated")
+
     return args
 
 args = parse_arguments()

@@ -5,6 +5,7 @@ from sbiRandM.sbiRandM.modeller_comparison import *
 from tkinter import filedialog
 
 class ventana():
+
    
     def __init__(self , master):
 
@@ -49,6 +50,10 @@ class ventana():
         
         self.var.set(2)
 
+        self.verbose = BooleanVar()
+        self.verb = ttk.Checkbutton(master, text="verbose", variable=self.verbose)
+        self.verb.grid(column=2, row=6)
+
         self.btnMod = ttk.Button(master , text='Run!' , command=self.clicked, width=20)
 
         self.btnMod.grid(column=3 , row=6)
@@ -64,12 +69,13 @@ class ventana():
         self.btn3.grid(column=3 , row=4)
 
    ### FUNCTION ZONE
-    def clicked(self, master):
+    def clicked(self):
         #Codigo de ejecucion modeller
         args = dict()
         args['folder'] = self.txtModPDBPath.get()
         args['fasta_seq'] = self.txtModFastaPath.get()
         args['output_folder'] = self.txtModOutputPath.get()
+        args['verbose'] = self.verb.get()
       
         if self.var.get() == 2:
            #Por superimposicion
@@ -103,8 +109,12 @@ if __name__ == "__main__":
     root = Tk()
     
     ss = ventana(root)
+    
     root.title("sbiRandM complex builder")
+    root['bg'] = "#EAEAEA"
+    root.resizable(False, False)
     root.mainloop()
+
 
 
 
