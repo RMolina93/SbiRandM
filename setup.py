@@ -6,11 +6,11 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="sbiRandM",
-    version="1.0.0",
+    version="1.0.3",
     author="Ruben-And-Miguel",
     author_email="ruben.molina-fernandez@upf.edu",
     description="Protein-DNA Complex builder",
-    long_description="long_descriptio",
+    long_description="This is the Structural Bioinformatics project of Ruben Molina and Miguel Dieguez.",
     long_description_content_type="text/markdown",
     url="https://github.com/RMolina93/Structural_Project",
     packages=['sbiRandM','sbiRandM.sbiRandM'],

@@ -72,7 +72,7 @@ def pairwise_generator(pdb_file, tmp):
                         
     return None
 
-
+'''
 if __name__ == "__main__":
     pdb_path = os.path.join(os.path.dirname(os.path.abspath(sys.argv[1])))
     pdb_file = os.path.basename(sys.argv[1])
@@ -86,3 +86,4 @@ if __name__ == "__main__":
     print (pdb_file)
     print(pairwise_generator(pdb_full_path, TMP_folder))
 
+'''
