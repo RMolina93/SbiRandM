@@ -16,7 +16,7 @@ class window():
    
     def __init__(self , master):
 
-        logging.basicConfig(filename='example.log' , level=logging.DEBUG)
+        logging.basicConfig(filename='example.log', level=logging.DEBUG)
       
         self.lblModPDBPath = ttk.Label(master, text="Introduce the path to the PDB directory")
         self.lblModPDBPath.grid(column=0, row=0)
@@ -130,10 +130,10 @@ class window():
         browse for a fasta file. 
         Then it inserts the file into the GUI field.
         """
-   
-       file = filedialog.askopenfilename()
-       self.txtModFastaPath.delete(0 , 'end')
-       self.txtModFastaPath.insert(0,file )
+
+        file = filedialog.askopenfilename()
+        self.txtModFastaPath.delete(0 , 'end')
+        self.txtModFastaPath.insert(0,file )
 
     def browseOutput(self):
         """
@@ -141,10 +141,9 @@ class window():
         browse for an output directory. 
         Then it inserts the file into the GUI field.
         """
-   
-       directory = filedialog.askdirectory()
-       self.txtModOutputPath.delete(0 , 'end')
-       self.txtModOutputPath.insert(0,directory)
+        directory = filedialog.askdirectory()
+        self.txtModOutputPath.delete(0 , 'end')
+        self.txtModOutputPath.insert(0,directory)
 
     def validate_input(self, input):
         """
