@@ -2,8 +2,10 @@ import argparse, warnings
 from sbiRandM.sbiRandM import *
 
 def mainSuperimp(args):
-   if not os.path.isdir(args['output_folder']):
+   if args['verbose']:
+      print ("Verbose Mode: Activated.")
 
+   if not os.path.isdir(args['output_folder']):
       if args['verbose']:
          print ('Output folder do not exist. Creating...')
       os.mkdir(args['output_folder'])
@@ -11,6 +13,7 @@ def mainSuperimp(args):
    if args['verbose']:
       print ("Checking the steichiometry of the complex using the fasta file.")
    steichiometry_dict = check_fasta_stoichometry(args['fasta_seq'])
+   
    if args['verbose']:
       print ("The input fasta consist of", len(steichiometry_dict.keys()), "different chains.")
 
