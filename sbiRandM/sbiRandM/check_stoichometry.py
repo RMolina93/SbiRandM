@@ -17,7 +17,6 @@ def check_fasta_stoichometry(fasta_path):
 
     steichiometry_dict = dict()
     chains = list(SeqIO.parse(fasta_path, "fasta"))
-
     index = 0
 
     for chain in chains:

@@ -1,14 +1,15 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 from sbiRandM.sbiRandM.superimp import *
 from sbiRandM.sbiRandM.modeller_comparison import *
 from tkinter import filedialog
+import logging
 
 class ventana():
    
     def __init__(self , master):
-
-
+        logging.basicConfig(filename='example.log' , level=logging.DEBUG)
         ### MODELLER TAB ZONE
       
         self.lblModPDBPath = ttk.Label(master, text="Introduce the path to the PDB directory")
@@ -64,26 +65,56 @@ class ventana():
         self.btn3.grid(column=3 , row=4)
 
    ### FUNCTION ZONE
-    def clicked(self, master):
+    def clicked(self):
         #Codigo de ejecucion modeller
         args = dict()
-        args['folder'] = self.txtModPDBPath.get()
-        args['fasta_seq'] = self.txtModFastaPath.get()
-        args['output_folder'] = self.txtModOutputPath.get()
-      
-        if self.var.get() == 2:
-           #Por superimposicion
-           mainSuperimp(args)
-        elif self.var.get() == 1:
-           mainMod(args)
+        if(self.txtModPDBPath.get() =="" or self.txtModFastaPath.get() =="" or self.txtModOutputPath.get() ==""):
+            messagebox.showinfo("Error (But don't worry!)" , "You didn't enter a path or file for the arguments! Please feel free to try again.")
+            self.clear()
+        else:
+           
+            args['folder'] = self.txtModPDBPath.get()
+            args['fasta_seq'] = self.txtModFastaPath.get()
+            args['output_folder'] = self.txtModOutputPath.get()
+            try:
+                if self.var.get() == 2:
+                   #Por superimposicion
+                   mainSuperimp(args)
+                elif self.var.get() == 1:
+                   mainMod(args)
+            except FileNotFoundError:
+                messagebox.showinfo("Error (But don't worry!)" , "It seems like one of the paths that you introduced is not valid. Please try again!")
+                logging.error('It seems like one of the paths that you introduced is not valid. Please try again!')
+                self.clear()
+            except IsADirectoryError:
+                messagebox.showinfo("Error (But don't worry!)" , "It seems like one of the paths that you introduced is a directory instead of a file. Please try again!")
+                logging.error('It seems like one of the paths that you introduced is a directory instead of a file. Please try again!')
+                self.clear()
+            except FilesDontMatchException:
+                messagebox.showinfo("Error (But don't worry!)", "The files you introduced are not correct")
+                logging.error('The files you introduced are not correct')
+                self.clear()
+            except FastaRaroException:
+                messagebox.showinfo("Error (But don't worry!)" , "The fasta file does not match with the pdbs of the protein!")
+                logging.error('The fasta file does not match with the pdbs of the protein!')
+                self.clear()
+            except BadFastaException:
+                messagebox.showinfo("Error (But don't worry!)" ,
+                                    "The fasta file is not formatted or configured correctly")
+                logging.error('The fasta file does not match with the pdbs of the protein!')
+                self.clear()
 
-        
+    def clear(self):
+        self.txtModPDBPath.delete(0 , 'end')
+        self.txtModFastaPath.delete(0 , 'end')
+        self.txtModOutputPath.delete(0 , 'end')
 
     ### END OF FUNCTION ZONE
 
     def browsePDB(self):
         
         directory = filedialog.askdirectory()
+        print(self.validate_input(directory))
         self.txtModPDBPath.delete(0 , 'end')
         self.txtModPDBPath.insert(0,directory)
 
@@ -98,12 +129,16 @@ class ventana():
        directory = filedialog.askdirectory()
        self.txtModOutputPath.delete(0 , 'end')
        self.txtModOutputPath.insert(0,directory)
-       
+
+    def validate_input(self, input):
+        if type(input) == str:
+            return True
+        return False
 if __name__ == "__main__":
     root = Tk()
     
     ss = ventana(root)
-    root.title("sbiRandM complex builder")
+    root.title("sbiRandM incredibly awesome complex builder")
     root.mainloop()
 
 

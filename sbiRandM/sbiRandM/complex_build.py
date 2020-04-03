@@ -4,6 +4,8 @@ from Bio.PDB import PDBParser
 from Bio.PDB import Superimposer
 from Bio import SeqIO
 from sbiRandM.sbiRandM import *
+from sbiRandM.sbiRandM.exceptions import *
+
 from sbiRandM.sbiRandM.data import Alphabet
 import itertools, random
 from shutil import copyfile
@@ -33,8 +35,10 @@ def check_chain_addition(complex_pdb, chain, pairwise_dict, steichiometry_dict):
 
     complex_pdb = parser.get_structure('Complex', complex_pdb)
     
-    chains_to_test_in_complex = list(pairwise_dict[chain].keys())
-
+    try:
+        chains_to_test_in_complex = list(pairwise_dict[chain].keys())
+    except KeyError:
+        raise FastaRaroException
     common_chains = list()
     
     
