@@ -12,6 +12,7 @@ from shutil import copyfile
 
 
 def Compute_equal_chain(structure_1, structure_2):
+    
     """
     @ Input - Two Biopython PDB structures of an interaction.
     @ Output - A list of Atoms that correspond to the same chain.
@@ -53,7 +54,6 @@ def check_chain_addition(complex_pdb, chain, pairwise_dict, steichiometry_dict):
     return None
 
 def build_complex(file_1, file_2):
-    # COMPLEX FILE, PAIRWISE_DICT AND CHAIN TO ADD???????
     """
     This function takes the complex output file (or in the first iteration one of the pairwise interactions)
     and another pairwise interaction PDB complex. Then it tries to add the chain to the complex until there is not clash
@@ -61,7 +61,6 @@ def build_complex(file_1, file_2):
     @ Input - Two file path for a PDB interactions.
     @ Output - File path of the complex PDB file / Error: Chain cannot be added.
     """
-    #print ("Trying to add", file_1, "and", file_2)
 
     parser = PDBParser(PERMISSIVE=1)
 
@@ -77,20 +76,17 @@ def build_complex(file_1, file_2):
         sup.set_atoms(atoms_fixed, atoms_moving)
     except:
         return False
-    #print(sup.rms)
+
     sup.apply(list(structure_2.get_atoms()))
 
     for chain in structure_2[0].get_chains():
         if chain.id != list(atoms_moving)[0].get_full_id()[2]:
             moved_chain = chain
-            #print ("Going to move chain:", moved_chain.id)
 
     if check_clash(structure_1, moved_chain):
-    #if True:
         with open(file_1, "wt") as out_file:
             
             for model in list(structure_1.get_chains()) + [moved_chain] :
-                #print ("Hi im a model to write!")
                 io.set_structure(model)
                 io.save(out_file)
 
@@ -99,10 +95,6 @@ def build_complex(file_1, file_2):
         return True
     return False
 
-
-    
-    print ("\nAdded Chain", moved_chain.id, "to chains:", [i.id for i in structure_1.get_chains()])
-    return output_name
 
 def rename_complex_chains(file):
     """
@@ -129,7 +121,6 @@ def rename_complex_chains(file):
                         out_file.write("".join(line))
     os.remove(file)
     os.rename(temp_file, file)
-    #print ("The PDB file is located in:", file)
 
 def execute_complex(steichiometry_dict, pairwise_dict, args):
 
@@ -140,13 +131,12 @@ def execute_complex(steichiometry_dict, pairwise_dict, args):
     random_start_1 = random.choice(list(pairwise_dict.keys()))
     random_start_2 = random.choice(list(pairwise_dict[random_start_1].keys()))
 
-    if args.verbose:
+    if args['verbose']:
         print ("Starting from random chains:", random_start[0] ,"and", random_start[1])
 
     start_complex = pairwise_dict[random_start_1][random_start_2]
-    pdb_complex = os.path.join(args.output_folder, "complex.pdb")
+    pdb_complex = os.path.join(args['output_folder'], "complex.pdb")
     copyfile(start_complex, pdb_complex)
-    #print ("The PDB file is located in:", start_complex)
 
     chains_list.remove(random_start_1)
     chains_list.remove(random_start_2)
@@ -169,30 +159,12 @@ def execute_complex(steichiometry_dict, pairwise_dict, args):
             if chain_addition:
                 chains_list.remove(try_chain)
                 print("Chain added successfully. Number of remaining chains:" , len(chains_list))
-                if args.verbose:
-                    print("The remaining chains to add are" , chains_list)
+                if len(chains_list) == 0:
+                    print("All chains have been added.")
+                elif args['verbose']:
+                    if len(chains_list) != 0:
+                        print("The remaining chains to add are" , chains_list)
                 break
     
-    return os.path.join(args.output_folder, "complex.pdb")
-
-"""
-def model_validation(pdb_file, fasta):
-
- 
-    Since this is a randomized algorithm, sometimes things could be wrong.
-    Therefore we implemented a function, that redo the algorithm if the resulting PDB
-    has a different number of chains than the fasta
-
-
-    parser = PDBParser(PERMISSIVE=1)
-    complex_pdb = parser.get_structure('Complex', pdb_file)
-    num_pdb_chains = len(list(complex_pdb.get_chains()))
-    num_fasta_chains = len(list(SeqIO.parse(fasta, "fasta")))
-
-    if num_fasta_chains == num_pdb_chains:
-        return True
-    else:
-        return False
-"""
-
+    return os.path.join(args['output_folder'], "superimposition_complex.pdb")
 

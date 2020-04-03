@@ -21,11 +21,10 @@ def parse_arguments():
 
     args = vars(parser.parse_args())
 
-    if args.verbose:
-        print ("Verbose mode: activated")
-
     return args
 
 args = parse_arguments()
+if args['verbose']:
+    print ("Verbose mode: Activated.")
 
 sup.mainSuperimp(args)

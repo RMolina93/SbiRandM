@@ -73,7 +73,6 @@ def obtain_pairwise_dict(steichiometry_dict, TMP_folder):
         index += 1
         structure = parser.get_structure('Complex', pdb_file)
 
-        #print ("Parsing PDB file", pdb_file)
 
         for steichiometry_chain in steichiometry_dict: #A,C
             for chain in structure.get_chains():
@@ -83,14 +82,14 @@ def obtain_pairwise_dict(steichiometry_dict, TMP_folder):
 
 
         chain_list = list(structure.get_chains())
-        print ("File is", pdb_file)
         try:
             
             pairwise_dict[chain_list[0].real_id][chain_list[1].real_id] = (pdb_file)
             pairwise_dict[chain_list[1].real_id][chain_list[0].real_id] = (pdb_file)
+
         except Exception:
             raise FilesDontMatchException
-    print ("Parsed", index, "interaction files.")
+
     return dict(pairwise_dict)
 
             

@@ -1,10 +1,13 @@
 from tkinter import *
 from tkinter import ttk
+import os
 from tkinter import messagebox
 from sbiRandM.sbiRandM.superimp import *
 from sbiRandM.sbiRandM.modeller_comparison import *
 from tkinter import filedialog
 import logging
+
+os.environ['TK_SILENCE_DEPRECATION'] = "1"
 
 class ventana():
    
@@ -81,7 +84,7 @@ class ventana():
            args['folder'] = self.txtModPDBPath.get()
            args['fasta_seq'] = self.txtModFastaPath.get()
            args['output_folder'] = self.txtModOutputPath.get()
-           args['verbose'] = self.verb.get()
+           args['verbose'] = self.verbose.get()
            try:
                 if self.var.get() == 2:
                    #Por superimposicion
@@ -89,6 +92,7 @@ class ventana():
                 elif self.var.get() == 1:
                    
                    mainMod(args)
+
            except FileNotFoundError:
                 messagebox.showinfo("Error (But don't worry!)" , "It seems like one of the paths that you introduced is not valid. Please try again!")
                 logging.error('It seems like one of the paths that you introduced is not valid. Please try again!')
@@ -141,6 +145,7 @@ class ventana():
             return True
         return False
 if __name__ == "__main__":
+    print ("Welcome to the GUI Interface of SbiRandM Complex Builder. Please fill the options to proceed.")
     root = Tk()
     
     ss = ventana(root)
