@@ -1,6 +1,11 @@
 import os, sys
 
 class Chain():
+    """
+    This object stores the properties of a polypeptide chain, 
+    such as the name, the aminoacid sequence, the chain of the fasta file which is
+    mapped to, and the first and last aminoacid numbers.
+    """
 
     def __init__(self, name, sequence, first_aminoacid, last_aminoacid):
         self.name = name
@@ -9,8 +14,6 @@ class Chain():
         self.first_aminoacid = str(first_aminoacid)
         self.last_aminoacid = str(last_aminoacid)
 
-    def used(self):
-        self.used = True
 
     def dna_to_placeholder(self):
         """
@@ -27,6 +30,9 @@ class Chain():
             return False
 
     def pretty_print(self):
+        """
+        This function prints the information of the Chain object in a more agradable way
+        """
         print ("Chain name:", self.name)
         print ("Chain sequence:", self.sequence)
         print ("Chain Original Chain:" , self.originalChain)
@@ -34,6 +40,11 @@ class Chain():
         print ("Last Aminoacid Number:", self.last_aminoacid)
 
 class Protein_Interaction():
+    """
+    This class defines an object of a Pairwise Interaction (Protein-Protein, Protein-DNA or DNA-DNA)
+    It stores information such as the path of the structure, and if the chains are reversed in order
+    according to the fasta.
+    """
 
     def __init__(self, name, path):
         self.name = name
@@ -59,6 +70,9 @@ class Protein_Interaction():
 
 
 class Query():
+    """
+    This class is a container for the chains of the query fasta
+    """
 
     def __init__(self, name):
         self.name = name

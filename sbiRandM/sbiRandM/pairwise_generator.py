@@ -7,8 +7,10 @@ warnings.filterwarnings("ignore")
 
 def write_pairwise(pdb_file, pairwise_interactions, tmp):
     """
-    input: PDB file, list of pairwise chain id that makes interactions, obtained with the function pairwise_generator
-    output: This function writes the PairWise interactions of chains in different PDB files in the same folder as input.
+    This function generates pairwise interaction files, from a single Complex. Useful for testing.
+
+    Input: PDB file, list of pairwise chain id that makes interactions, obtained with the function pairwise_generator
+    Output: This function writes the PairWise interactions of chains in different PDB files in the same folder as input.
     """
 
     split_call = f'./modules/scripts/PDBtoSplitChain2.pl -i {pdb_file} -o {tmp}/temp_{os.path.basename(pdb_file)[:-4]}_' 

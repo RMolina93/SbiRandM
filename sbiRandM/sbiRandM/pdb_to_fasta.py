@@ -4,6 +4,10 @@ from sbiRandM.sbiRandM import *
 from sbiRandM.sbiRandM.data import aminoacids, Alphabet
 
 def pdb_to_fasta(pdb_file, out_fasta_file):
+    """
+    This function takes as input a PDB file, and
+    returns the Fasta file of the sequence.
+    """
 
     parser = PDBParser(PERMISSIVE=1)
     structure = parser.get_structure('Complex', pdb_file)

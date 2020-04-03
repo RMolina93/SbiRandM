@@ -7,6 +7,9 @@ from sbiRandM.sbiRandM.data import Alphabet
 def check_fasta_stoichometry(fasta_path):
 
     """
+    This function takes the path of the Fasta file of the Complex, and checks the homology between chains
+    to detect the steichiometry of the protein.
+    
     @input - Fasta file of the Complex
 
     @output - Dictionary with the steichiometry of the complex.

@@ -264,6 +264,10 @@ def reorder_pdb(interactions):
             print ("Reversed PDB at path:", corrected_PDB)
 
 def clean_directories(output_folder, TMP_folder):
+    """
+    This function removes all the temporal files generated
+    for the usage of Modeller
+    """
 
     to_remove = glob.glob(os.path.join(args['folder'], "*SEPARED*"))
     to_remove = to_remove + glob.glob(os.path.join(args['output_folder'], "*SEPARED*")) + \
@@ -278,9 +282,7 @@ def clean_directories(output_folder, TMP_folder):
         os.remove(file)
 
 
-#if __name__ == "__main__":
 
-#    args = parse_arguments()
 def mainMod(args):
     query = fasta_to_object(args['fasta_seq'])
     interactions = create_models(args['folder'])
@@ -292,12 +294,6 @@ def mainMod(args):
     
     make_model(args['output_folder'], args['folder'], args['fasta_seq'])
     clean_directories(args['output_folder'], args['folder'])
-    
-
-
-    
-    #for interaction in updated_interactions:
-    #    interaction.pretty_print()
     
 
 
