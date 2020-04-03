@@ -131,7 +131,7 @@ def rename_complex_chains(file):
     os.rename(temp_file, file)
     #print ("The PDB file is located in:", file)
 
-def execute_complex(steichiometry_dict, pairwise_dict, output_folder):
+def execute_complex(steichiometry_dict, pairwise_dict, args):
 
     chains_list = [[i] * steichiometry_dict[i]["steichiometry"] for i  in steichiometry_dict]
     chains_list = list(itertools.chain.from_iterable(chains_list))
@@ -140,10 +140,11 @@ def execute_complex(steichiometry_dict, pairwise_dict, output_folder):
     random_start_1 = random.choice(list(pairwise_dict.keys()))
     random_start_2 = random.choice(list(pairwise_dict[random_start_1].keys()))
 
-    #print ("Starting from random chains:", random_start[0] ,"and", random_start[1])
+    if args.verbose:
+        print ("Starting from random chains:", random_start[0] ,"and", random_start[1])
 
     start_complex = pairwise_dict[random_start_1][random_start_2]
-    pdb_complex = os.path.join(output_folder, "complex.pdb")
+    pdb_complex = os.path.join(args.output_folder, "complex.pdb")
     copyfile(start_complex, pdb_complex)
     #print ("The PDB file is located in:", start_complex)
 
@@ -152,6 +153,7 @@ def execute_complex(steichiometry_dict, pairwise_dict, output_folder):
 
     while len(chains_list) > 0:
         try_chain = random.choice(chains_list)
+
         file_to_try = []
 
         while len(file_to_try) == 0:
@@ -167,15 +169,13 @@ def execute_complex(steichiometry_dict, pairwise_dict, output_folder):
             if chain_addition:
                 chains_list.remove(try_chain)
                 print("Chain added successfully. Number of remaining chains:" , len(chains_list))
-                print("The remaining chains to add are" , chains_list)
-
+                if args.verbose:
+                    print("The remaining chains to add are" , chains_list)
                 break
-
-
-        #print ("The remaining chains to add are", chains_list)
     
-    return os.path.join(output_folder, "complex.pdb")
+    return os.path.join(args.output_folder, "complex.pdb")
 
+"""
 def model_validation(pdb_file, fasta):
 
     """
@@ -193,6 +193,6 @@ def model_validation(pdb_file, fasta):
         return True
     else:
         return False
-
+"""
 
 

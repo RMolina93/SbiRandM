@@ -50,6 +50,10 @@ class ventana():
         
         self.var.set(2)
 
+        self.verbose = BooleanVar()
+        self.verb = ttk.Checkbutton(master, text="verbose", variable=self.verbose)
+        self.verb.grid(column=2, row=6)
+
         self.btnMod = ttk.Button(master , text='Run!' , command=self.clicked, width=20)
 
         self.btnMod.grid(column=3 , row=6)
@@ -68,15 +72,17 @@ class ventana():
     def clicked(self):
         #Codigo de ejecucion modeller
         args = dict()
-        if(self.txtModPDBPath.get() =="" or self.txtModFastaPath.get() =="" or self.txtModOutputPath.get() ==""):
-            messagebox.showinfo("Error (But don't worry!)" , "You didn't enter a path or file for the arguments! Please feel free to try again.")
-            self.clear()
+        if (self.txtModPDBPath.get() == "" or self.txtModFastaPath.get() == "" or self.txtModOutputPath.get() == ""):
+           messagebox.showinfo("Error (But don't worry!)" ,
+                               "You didn't enter a path or file for the arguments! Please feel free to try again.")
+           self.clear()
         else:
-           
-            args['folder'] = self.txtModPDBPath.get()
-            args['fasta_seq'] = self.txtModFastaPath.get()
-            args['output_folder'] = self.txtModOutputPath.get()
-            try:
+   
+           args['folder'] = self.txtModPDBPath.get()
+           args['fasta_seq'] = self.txtModFastaPath.get()
+           args['output_folder'] = self.txtModOutputPath.get()
+           args['verbose'] = self.verb.get()
+           try:
                 if self.var.get() == 2:
                    #Por superimposicion
                    mainSuperimp(args)
@@ -114,7 +120,6 @@ class ventana():
     def browsePDB(self):
         
         directory = filedialog.askdirectory()
-        print(self.validate_input(directory))
         self.txtModPDBPath.delete(0 , 'end')
         self.txtModPDBPath.insert(0,directory)
 
@@ -138,7 +143,10 @@ if __name__ == "__main__":
     root = Tk()
     
     ss = ventana(root)
+    
     root.title("sbiRandM incredibly awesome complex builder")
+    root['bg'] = "#EAEAEA"
+    root.resizable(False, False)
     root.mainloop()
 
 
