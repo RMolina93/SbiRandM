@@ -87,24 +87,25 @@ class ventana():
                    #Por superimposicion
                    mainSuperimp(args)
                 elif self.var.get() == 1:
+                   
                    mainMod(args)
-            except FileNotFoundError:
+           except FileNotFoundError:
                 messagebox.showinfo("Error (But don't worry!)" , "It seems like one of the paths that you introduced is not valid. Please try again!")
                 logging.error('It seems like one of the paths that you introduced is not valid. Please try again!')
                 self.clear()
-            except IsADirectoryError:
+           except IsADirectoryError:
                 messagebox.showinfo("Error (But don't worry!)" , "It seems like one of the paths that you introduced is a directory instead of a file. Please try again!")
                 logging.error('It seems like one of the paths that you introduced is a directory instead of a file. Please try again!')
                 self.clear()
-            except FilesDontMatchException:
+           except FilesDontMatchException:
                 messagebox.showinfo("Error (But don't worry!)", "The files you introduced are not correct")
                 logging.error('The files you introduced are not correct')
                 self.clear()
-            except FastaRaroException:
+           except FastaRaroException:
                 messagebox.showinfo("Error (But don't worry!)" , "The fasta file does not match with the pdbs of the protein!")
                 logging.error('The fasta file does not match with the pdbs of the protein!')
                 self.clear()
-            except BadFastaException:
+           except BadFastaException:
                 messagebox.showinfo("Error (But don't worry!)" ,
                                     "The fasta file is not formatted or configured correctly")
                 logging.error('The fasta file does not match with the pdbs of the protein!')

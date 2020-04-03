@@ -178,11 +178,11 @@ def execute_complex(steichiometry_dict, pairwise_dict, args):
 """
 def model_validation(pdb_file, fasta):
 
-    """
+ 
     Since this is a randomized algorithm, sometimes things could be wrong.
     Therefore we implemented a function, that redo the algorithm if the resulting PDB
     has a different number of chains than the fasta
-    """
+
 
     parser = PDBParser(PERMISSIVE=1)
     complex_pdb = parser.get_structure('Complex', pdb_file)
