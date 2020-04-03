@@ -21,9 +21,10 @@ class Chain():
         """
         if all(c in "TGAC" for c in str(self.sequence)):
             new_seq = self.sequence.replace("T","Z")
-            new_seq = new_seq.replace("G","X")
-            new_seq = new_seq.replace("C","U")
+            new_seq = new_seq.replace("G","B")
+            new_seq = new_seq.replace("C","_")
             new_seq = new_seq.replace("A","O")
+            new_seq = new_seq.replace("U", "J")
             self.sequence = new_seq
             return True
         else:
@@ -65,7 +66,6 @@ class Protein_Interaction():
         print ("Interaction name:", self.name)
         print ("Chains:", self.chains)
         print ("Path:" , self.path)
-        print ("Biopython object:", self.biopython_object)
         print ("Reversed:", self.reversed)
 
 
@@ -73,7 +73,6 @@ class Query():
     """
     This class is a container for the chains of the query fasta
     """
-
     def __init__(self, name):
         self.name = name
         self.chains =list()
