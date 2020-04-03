@@ -7,6 +7,15 @@ from collections import defaultdict
 from sbiRandM.sbiRandM.exceptions import *
 
 def check_homology(fasta_1, fasta_2):
+    """
+    This function check the identity percentage between two chains, and returns True if they are homologous
+    or False if they are not. The threshold is currently at 70%.
+
+    @ Input - Fasta_1 : String of fasta sequence
+              Fasta_2 : String of fasta sequence
+
+    @ Output - Boolean variable indicating if sequence are homologous
+    """
 
     if fasta_1 in fasta_2:
         return True
@@ -20,9 +29,13 @@ def check_homology(fasta_1, fasta_2):
 
 def Get_fasta(chain):
     """
+    This function takes as input a Biopython PDB Chain object, and parse it into 
+    a sequence of aminoacids.
+
     @ Input - Biopython PDB Chain object
-    @ Output - Sequence of Aminoacids of the PDB Chain Object.
+    @ Output - String of the sequence of Aminoacids of the PDB Chain Object.
     """
+
     sequence = ""
     for residue in chain:
         try:
@@ -32,9 +45,8 @@ def Get_fasta(chain):
     return sequence
 
 def check_clash(structure_complex, mobile_chain):
-
     """
-    Check if the new added chain clash with the total complex.
+    This function checks if the new added chain clash with any chain of the complex.
 
     @ Input - Structure_complex : Biopython object of the actual complex
               Mobile_chain : Biopython object of the moving chain when adding a new chain.
@@ -54,6 +66,10 @@ def check_clash(structure_complex, mobile_chain):
 def obtain_pairwise_dict(steichiometry_dict, TMP_folder):
 
     """
+    This function parse a folder full with PDB of the pairwise interactions, and 
+    parse them into a dictionary that contains as keys the interacting chains, and
+    as value, the path of the file that contains the structure of the interaction.
+
     @Input - Steichiometry dict with the next format.
               Name of the chain : 
                         Steichiometry - Absolute number that the chain appear in the Fasta.
@@ -73,17 +89,14 @@ def obtain_pairwise_dict(steichiometry_dict, TMP_folder):
         index += 1
         structure = parser.get_structure('Complex', pdb_file)
 
-
         for steichiometry_chain in steichiometry_dict: #A,C
             for chain in structure.get_chains():
-
-                if check_homology(Get_fasta(chain), steichiometry_dict[steichiometry_chain]["sequence"] ):
+                if check_homology(Get_fasta(chain), steichiometry_dict[steichiometry_chain]["sequence"]):
                     chain.real_id = steichiometry_chain
 
-
         chain_list = list(structure.get_chains())
+
         try:
-            
             pairwise_dict[chain_list[0].real_id][chain_list[1].real_id] = (pdb_file)
             pairwise_dict[chain_list[1].real_id][chain_list[0].real_id] = (pdb_file)
 
