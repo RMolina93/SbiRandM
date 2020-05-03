@@ -8,29 +8,63 @@ from .interaction_module import *
 from .data import Alphabet
 import itertools, random
 from shutil import copyfile
+import difflib
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 def Compute_equal_chain(structure_1, structure_2):
     
     """
     @ Input - Two Biopython PDB structures of an interaction.
-    @ Output - A list of Atoms that correspond to the same chain.
+    @ Output - A list of Atoms of same size that correspond to the same chain.
     """
 
     for chain in structure_1[0]:
         for chain_2 in structure_2[0]:
-            if Get_fasta(chain) == Get_fasta(chain_2):
-                return (list(chain.get_atoms()), list(chain_2.get_atoms()))
 
+            fasta_1 = Get_fasta(chain)
+            fasta_2 = Get_fasta(chain_2)
+            print ("Checking:\n",fasta_1,"\n and \n", fasta_2)
+            if check_homology(Get_fasta(chain), Get_fasta(chain_2)):
+                print ("They are homologous")
+
+                if len(fasta_1) > len(fasta_2):
+                    smaller = chain_2
+                    larger = chain
+                else:
+                    smaller = chain
+                    larger = chain_2
+
+                s = difflib.SequenceMatcher(None, fasta_1, fasta_2)
+                miau = s.get_matching_blocks()
+                i = miau[0].a
+                size = miau[0].size
+                print ("init:", i, "size:",size)
+
+                residues = list(larger.get_residues())[i : i + size]
+                print (len(residues), len(Get_fasta(smaller)))
+
+                atoms = list()
+                for residue in residues:
+                    atoms = atoms + list(residue.get_atoms())
+
+                if smaller == chain_2:
+                    return atoms, list(smaller.get_atoms())
+                else:
+                    return list(smaller.get_atoms()), atoms
+
+    print ("They are not homologous :(")
     return (None, None)
 
 def check_chain_addition(complex_pdb, chain, pairwise_dict, steichiometry_dict):
     """
-    TO-DO
-    Esto tiene que mirar si el complex PDB y la chain.id que queremos añadir, tienen alguna interaccion posible
-    si la tienen, se devuelve el path del file
-    si no la tiene, se devuelve false, por lo que se hace otro pick at random
+    Check if complex PDB and Adding Chain have atoms in common
+    Output - True / False
     """
+    warnings.filterwarnings("ignore")
+
     parser = PDBParser(PERMISSIVE=1)
 
     complex_pdb = parser.get_structure('Complex', complex_pdb)
@@ -40,7 +74,6 @@ def check_chain_addition(complex_pdb, chain, pairwise_dict, steichiometry_dict):
     except KeyError:
         raise FastaRaroException
     common_chains = list()
-    
     
     for chain_pdb in complex_pdb.get_chains():
         fasta = Get_fasta(chain_pdb)
@@ -68,6 +101,7 @@ def build_complex(file_1, file_2):
 
     sup = Superimposer()
     io = PDBIO()
+
 
     atoms_fixed, atoms_moving = Compute_equal_chain(structure_1, structure_2)
 
@@ -122,18 +156,25 @@ def rename_complex_chains(file):
     os.rename(temp_file, file)
 
 def execute_complex(steichiometry_dict, pairwise_dict, args):
+    warnings.filterwarnings("ignore")
 
     chains_list = [[i] * steichiometry_dict[i]["steichiometry"] for i  in steichiometry_dict]
     chains_list = list(itertools.chain.from_iterable(chains_list))
 
-    random_start = random.sample(chains_list, 2)
-    random_start_1 = random.choice(list(pairwise_dict.keys()))
-    random_start_2 = random.choice(list(pairwise_dict[random_start_1].keys()))
+    #REMOVED THE RANDOM START TO A AND B. MAYBE THERE WOULD BE SOME FUTURE IMPLEMENTATION
+    #random_start = random.sample(chains_list, 2)
+    #random_start_1 = random.choice(list(pairwise_dict.keys()))
+    #random_start_2 = random.choice(list(pairwise_dict[random_start_1].keys()))
+    
+    random_start_1 = "A"
+    random_start_2 = "B"
 
-    if args['verbose']:
-        print ("Starting from random chains:", random_start[0] ,"and", random_start[1])
+    #if args['verbose']:
+    #    print ("Starting from random chains:", random_start[0] ,"and", random_start[1])
 
     start_complex = pairwise_dict[random_start_1][random_start_2]
+    
+
     pdb_complex = os.path.join(args['output_folder'], "complex.pdb")
     copyfile(start_complex, pdb_complex)
 
@@ -160,9 +201,8 @@ def execute_complex(steichiometry_dict, pairwise_dict, args):
                 print("Chain added successfully. Number of remaining chains:" , len(chains_list))
                 if len(chains_list) == 0:
                     print("All chains have been added.")
-                elif args['verbose']:
-                    if len(chains_list) != 0:
-                        print("The remaining chains to add are" , chains_list)
+                if len(chains_list) != 0:
+                    print("The remaining chains to add are" , chains_list)
                 break
     
     return os.path.join(args['output_folder'], "superimposition_complex.pdb")

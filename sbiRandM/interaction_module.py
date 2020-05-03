@@ -53,12 +53,14 @@ def check_clash(structure_complex, mobile_chain):
     @ Output - True : Chain is clashing with complex.
                False: Chain is not clashing with complex. 
     """
+    #return True 
+
     backbone_atoms = ["CB", "P"]
     for atom in list(structure_complex.get_atoms()):
         for atom_2 in list(mobile_chain.get_atoms()):
             if atom.id in backbone_atoms and atom_2.id in backbone_atoms:
                 if atom_2 - atom < 1:
-                    #print ("Ups there is a crash!")
+                    print ("Ups there is a crash!")
                     return False
     return True
 
